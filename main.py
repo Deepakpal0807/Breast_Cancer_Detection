@@ -1,97 +1,53 @@
 import pandas as pd
-from sklearn.preprocessing import StandardScaler # used for fit and transform the data.
-from sklearn.model_selection import train_test_split # used for splitting the data into training and testing sets.
-from sklearn.linear_model import LogisticRegression # used for creating a logistic regression model.
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix # used for evaluating the model.
-import pickle  # Use the built-in pickle module
-
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+import pickle
 
 def dataclean():
-    # Load the data
-    data=pd.read_csv("data.csv")
- 
-
-    #understanding the data 
-    #checking for null value and more..
-
-
-    # print(data.info())
-    # print(data.describe())
-
-    # print(data.isnull().sum())
-
-    #there are 1 column that contain all Nan value..
-    #so we drop that column
-    # colname =Unnamed: 32
-
-    data.drop(['Unnamed: 32','id'],axis=1,inplace=True)
-
-    # We also drop the id column because it doesn't affect the diagnosis
-    # data.drop(['id'],axis=1,inplace=True)
-
-    
-    #checking for null value again
-    # print(data.isnull().sum())
-
-    # Converting the Diagnosis Column..
-    # Convert the M into 1 and B into 0
-
-    data['diagnosis']=data['diagnosis'].map({'M':1,'B':0})
-    # print(data.head())
-
-    
-
+    data = pd.read_csv("data.csv")
+    data.drop(['Unnamed: 32', 'id'], axis=1, inplace=True)
+    data['diagnosis'] = data['diagnosis'].map({'M': 1, 'B': 0})
     return data
 
-def create_model(data):
-    x=data.drop(['diagnosis'],axis=1)
-    y=data['diagnosis']
+def create_models(data):
+    x = data.drop(['diagnosis'], axis=1)
+    y = data['diagnosis']
 
-    scalar=StandardScaler()
-    x=scalar.fit_transform(x)
-    # use means and standard deviation to fit and transform the data..
-    # print(x)""
+    scalar = StandardScaler()
+    x = scalar.fit_transform(x)
 
-    #split the data for training and testing..
-    x_train,x_test,y_train,y_test=train_test_split(
-        x,y,test_size=0.2,random_state=42
-    )
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    #train the model
-    model=LogisticRegression()
-    model.fit(x_train,y_train)
-
-    #test the model
-    y_pred=model.predict(x_test)
-    print("Accuracy Score of our model : ",accuracy_score(y_test,y_pred))
-    print("Classification Report \n : ",classification_report(y_test,y_pred))
+    models = {
+        "Logistic Regression": LogisticRegression(),
+        "Decision Tree": DecisionTreeClassifier(),
+        "Random Forest": RandomForestClassifier(n_estimators=100)
+    }
     
-
-
-
-    # print(model.score(x_test,y_test))
-    # print(model.score(x_train,y_train))
-    return model,scalar 
+    trained_models = {}
+    for name, model in models.items():
+        model.fit(x_train, y_train)
+        y_pred = model.predict(x_test)
+        print(f"{name} Accuracy: {accuracy_score(y_test, y_pred)}")
+        print(f"{name} Classification Report:\n{classification_report(y_test, y_pred)}")
+        trained_models[name] = model
     
-
+    return trained_models, scalar
 
 def start():
-    data=dataclean()
-
-    # print(data.tail())
-
-    model,scalar=create_model(data)
-
-    #export the modell.
-    with open("model/model.pkl",'wb') as f:
-        pickle.dump(model,f)
-    with open("model/scalar.pkl",'wb') as f:
-        pickle.dump(scalar,f)
-
-
-
-
-if __name__=='__main__':
-    start()
-       
+    data = dataclean()
+    models, scalar = create_models(data)
     
+    with open("model/scalar.pkl", 'wb') as f:
+        pickle.dump(scalar, f)
+    
+    for name, model in models.items():
+        with open(f"model/{name.replace(' ', '_').lower()}.pkl", 'wb') as f:
+            pickle.dump(model, f)
+
+if __name__ == '__main__':
+    start()
