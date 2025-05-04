@@ -167,6 +167,7 @@ def add_predictions(input_data):
   
   if prediction[0] == 0:
     st.write("<span class='diagnosis benign'>Benign</span>", unsafe_allow_html=True)
+    
   else:
     st.write("<span class='diagnosis malicious'>Malicious</span>", unsafe_allow_html=True)
     
