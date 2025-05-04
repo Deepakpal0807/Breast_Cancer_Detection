@@ -3,8 +3,8 @@ import pickle
 import pandas as pd
 # import plotly.graph_objects as go
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def get_clean_data():
